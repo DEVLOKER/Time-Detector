@@ -15,7 +15,7 @@ example:
 
 | command        | time result           | image  |
 | ------------- |:-------------:| -----:|
-| `python TimeDetector.py clocks/clock-01.png` | Time is `06:34` | <img src="https://github.com/DEVLOKER/Time-Detector/blob/main/results/clock-02.png" width="256" height="256" alt="06:34"> |
+| `python TimeDetector.py clocks/clock-01.png` | Time is `06:34` | <img src="https://github.com/DEVLOKER/Time-Detector/blob/main/results/clock-02.png" width="128" height="128" alt="06:34"> |
 | `python TimeDetector.py clocks/clock-02.png` | Time is `06:14` | ![clock-02](https://github.com/DEVLOKER/Time-Detector/blob/main/results/clock-02.png?raw=true "Time is 06:14") |
 | `python TimeDetector.py clocks/clock-03.png` | Time is `09:54` | ![clock-03](https://github.com/DEVLOKER/Time-Detector/blob/main/results/clock-03.png?raw=true "Time is 09:54") |
 | `python TimeDetector.py clocks/clock-04.jpg` | Time is `09:32` | ![clock-04](https://github.com/DEVLOKER/Time-Detector/blob/main/results/clock-04.jpg?raw=true "Time is 09:32") |
