@@ -4,7 +4,6 @@ Python program for calculating time of analog clock image based on clockwise ang
 - after that, draw clockwise lines from center of analog clock.
 - calculate the length of each clockwise, the short one for hours, and the longest for minutes.
 - finally, calculate time (Hours:minutes) based on drawn clockwise lines angles.
-Time Detector is a Python program designed to accurately calculate the time of an analog clock image based on clockwise angles.
 
 ![](https://github.com/DEVLOKER/Time-Detector/blob/main/screenshots/time-detector.gif)
 
