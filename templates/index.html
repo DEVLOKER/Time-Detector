@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+        <title>Time Detector</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <script src="js/jquery-3.6.4.min.js" ></script>
+        <script src="js/bootstrap.bundle.min.js" ></script>
+
+        <style>
+            .card.card-left, .card.card-right {
+                width: 18rem; 
+                box-shadow: 0px 0px 10px 1px #ccc; 
+                border-radius: 20px 20px 10px 10px;
+            }
+
+            .processingContainer {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 20;
+                width: 100vw;
+                height: 100vh;
+                display: flex; justify-content: center; align-items: center; flex-direction: row; flex-wrap: nowrap;
+                background: rgba(0, 0, 0, 0.8);
+                visibility: hidden;
+                opacity: 0;
+                transition: visibility 0s, opacity 0.5s linear;
+            }
+            .processingContainer p {
+                font-size: 30px;
+                color: #fff;
+                font-weight: bolder;
+            }
+
+            .formContainer {
+                display: flex; justify-content: center; align-items: center;
+            }
+
+            #filesInput {
+                display: none;
+                /* visibility: hidden; */
+                width: 0px; height: 0px; opacity: 0px; position: fixed; top: -100%;
+            }
+
+
+            .filesContainer {
+                width: 100%;
+                display: flex; justify-content: center; align-items: flex-start; flex-direction: row; flex-wrap: nowrap;
+            }
+
+            @media screen and (max-width:640px) {
+                .app-header {
+                    flex-direction: column;
+                }
+                .app-header > div{
+                    justify-content: center;
+                    width: 100%;
+                    margin-top: 20px;
+                    text-align: center;
+                }
+                .clocks-container .col {
+                    justify-content: center!important;
+                    margin-bottom: 20px;
+                }
+                .tutorial-container {
+                    flex-direction: column;
+                }
+                .tutorial-container .col{
+                    margin-bottom: 20px;
+                    justify-content: center;
+                    text-align: center;
+                }
+            }
+
+            
+
+        </style>
+        
+        <script>
+
+            $(async ()=>{
+
+                $(".clocks-list").hide()
+
+            })
+
+            const renderClocks = (clocksList) => {
+
+                $(".clocks-list").html("")
+                clocksList.map((item, i)=>{
+
+                    let { srcImage, size, center, clockwise, time, processedImage, message } = item
+                    size = `${(size/1024).toFixed(2)}Kb`
+                    const color = message==null? "#1687541f" : "#dc35451F" 
+                    
+                    const $htmlCode = $(`
+                    <div class="row pt-4 pb-4 mt-4 mb-4 clocks-container" style_="background: #FAFAFA; border-radius: 15px;" >
+                        <div class="col d-flex justify-content-end">
+
+                            <div class="card border-0 text-center card-left" >
+                                <div class="card-body d-flex justify-content-center" >
+                                    <img src="/get/${srcImage}" class="card-img-top" alt="${srcImage}">
+                                </div>
+                                <div class="card-footer border d-flex justify-content-around">
+                                    <span class="card-muted text-truncate">${srcImage}</span>
+                                    <span class="card-muted"><span class="badge bg-dark rounded-pill">${size}</span></span>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col d-flex justify-content-start" >
+
+                            <div class="card border-0 text-center card-right">
+                                <div class="card-body d-flex justify-content-center" style="background: ${color}; cursor: pointer;     border-radius: 20px 20px 0px 0px;">
+                                    ${
+                                        message==null? `<img src="/download/${processedImage}" class="card-img-top" alt="${processedImage}">`
+                                    : 
+                                        `<p class="card-text">${message}</p>`
+                                    }
+                                </div>
+                                <div class="card-footer border d-flex justify-content-around" style="background: ${color};">
+                                    <span class="card-muted">Time is: <mark><strong>${time}</strong></mark></span>
+                                    ${ message==null? `<span class="card-muted"><a href="/download/${processedImage}" download="${processedImage}" target="_blank" class="link text-dark" >Download</a></span>`:``}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    `).data({details: item})
+
+                    $htmlCode.find(".card-right .card-body").click(function(){
+                        const details = $(this).closest(".clocks-container").data().details
+                        $("#details-modal").find('.modal-header').css({ "background": color })
+                        $("#details-modal").find('.modal-body').html(`<pre>${JSON.stringify(details, null, 4)}</pre>`)
+                        $("#details-modal").modal("show")
+                    })
+
+                    $(".clocks-list").append($htmlCode)
+                })
+
+            }
+
+            const handleFilesSelect = (input)=>{
+                if(!input?.files?.length!=0) return
+                let formData = new FormData()
+                for (const file of input.files) 
+                    formData.append("file", file)
+                uploadImages(formData)
+            }
+
+            const uploadImages = async (formdata) => {
+
+                $.ajax({
+                    url: "/upload",
+                    type: "POST",
+                    data: formdata,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: ( xhr ) => {
+                        showProcessingContainer()
+                    }
+                })
+                .done(( clocksList ) => {
+                    renderClocks(clocksList)
+                })
+                .fail( ( jqXHR, textStatus ) => {
+                    $(".clocks-list").html("Request failed: " + textStatus)
+                })
+                .always( () => {
+                    hideProcessingContainer()
+                })
+            }
+            
+            const showProcessingContainer = () => {
+                $(".processingContainer").css({"opacity": "1", "visibility": "visible"})
+                $(".clocks-list").html("").hide()
+            }
+
+            const hideProcessingContainer = () => {
+                $(".processingContainer").css({"opacity": "0", "visibility": "hidden"})
+                $(".clocks-list").show()
+            }
+
+        </script>
+
+    </head>
+    <body>
+
+
+        <div class="processingContainer" >
+            <p class="info" >Processing ...</p>
+        </div>
+
+
+        <div class="container" >
+
+            <div class="row app-header" style="background: #1687541f; border-radius: 0px 0px 20px 20px;">
+                <div class="col-4" >
+                    <div class="display-4 text-center text-success" style="text-shadow: 4px 1px 5px #198754;">Time detector </div>
+                    <div class="row small text-center  p-0_ mt-2" style="font-size: 18px;" >
+                        <div class="col">
+                            <a href="https://www.dev-loker.com" class="link text-dark small" style="text-decoration: none;" ><i>by Devloker</i></a>
+                        </div>
+                        <div class="col">
+                            <a href="#" id="how-it-works" type="button" class="link text-dark small"  style="text-decoration: none;" data-bs-toggle="modal" data-bs-target="#tutorial-modal"><i>How it works</i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-1 p-0 m-0"></div>
+                <div class="col-7" >
+                    <figure class="text-left">
+                        <blockquote class="blockquote">
+                            <p class="text small">Python application designed to accurately calculate the time of an analog clock image based on clockwise angles.</p>
+                        </blockquote>
+                        <figcaption class="blockquote-footer">
+                            The source code of the app is available on my <cite title="Source Title"><a href="https://github.com/DEVLOKER/Time-Detector" class="link text-dark" ><strong>Github</strong></a></cite> account. Please feel free to use or update the app as needed.
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+
+
+
+            <div class="card text-center w-100 mt-5 mb-5">
+                <div class="card-header border-0" style="background: #1687541f;" >
+                    <div class="row">
+                        <div class="col">
+                            <div class="formContainer" >
+                                <form name="formUpload" action="/" method="post" enctype="multipart/form-data">
+                                    <label for="filesInput">
+                                        <!-- <div class="addFiles" > <p>+</p> </div> -->
+                                        <span class="btn btn-success">Choose images ...</span>
+                                    </label>
+                                    <input id="filesInput" type="file" name="file" multiple onchange="handleFilesSelect(this)" accept="image/png, image/jpeg, image/jpg" />
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="card-body p-2 clocks-list">
+
+                </div>
+                <!-- <div class="card-footer border d-flex justify-content-around">
+                    <span class="card-muted"><a href="#" class="link text-dark" >Download all</a></span>
+                    <span class="card-muted"><span class="badge bg-dark rounded-pill">20ms</span></span>
+                </div> -->
+            </div>
+
+        </div>
+
+        
+        <div class="modal fade" id="details-modal" tabindex="-1" aria-labelledby="details-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: #1687541f;" >
+                        <h1 class="modal-title fs-5" id="details-modal-label">Details</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="tutorial-modal" tabindex="-1" aria-labelledby="tutorial-modal-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" >
+                        <h1 class="modal-title fs-5" id="tutorial-modal-label">How it works</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="popover-inner">
+                            <div class="row tutorial-container">
+                                <div class="col" >
+                                    <div style="background-image: url('img/tutorial.png');
+                                    background-position: center;
+                                    background-repeat: no-repeat;
+                                    background-size: contain;
+                                    width: 100%; height: 400px;">
+                                        
+                                    </div>
+                                </div>
+                                <div class="col" style="text-align: justify;">
+                                    <p>
+                                        Time Detector is a Python program designed to accurately calculate the time of an analog clock image based on clockwise angles.
+                                    </p>
+                                    <p>
+                                        The program utilizes an algorithm to automatically detect the center of the analog clock and draw a circle around it.
+                                    </p>
+                                    <p>
+                                        Once the center has been established, The program proceeds to draw clockwise lines from the center of the clock. It takes into account the angle and the length of each clockwise line, with shorter lines indicating the hours and longer lines indicating the minutes.
+                                    </p>
+                                    <p>
+                                        Finally, the program determine the corresponding time according to the clockwise lines.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
