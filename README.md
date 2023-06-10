@@ -6,7 +6,7 @@ Python program for calculating time of analog clock image based on clockwise ang
 - finally, calculate time (Hours:minutes) based on drawn clockwise lines angles.
 Time Detector is a Python program designed to accurately calculate the time of an analog clock image based on clockwise angles.
 
-![](https://github.com/DEVLOKER/Time-Detector/blob/main/screenshots/time-detector.gif)
+![](https://github.com/DEVLOKER/Time-Detector/blob/main/static/img/tutorial.png)
 
 ## Used Modules
 `pip install opencv-python numpy flask`
@@ -15,9 +15,8 @@ Time Detector is a Python program designed to accurately calculate the time of a
 - In the project directory, type: `flask --app app run`
 - In browser navigate to: `http://127.0.0.1:5000`
 
+![](https://github.com/DEVLOKER/Time-Detector/blob/main/screenshots/time-detector.gif)
+
 ## Results
 
 ![](https://github.com/DEVLOKER/Time-Detector/blob/main/screenshots/time-detector.jpg)
-
-![](https://github.com/DEVLOKER/Time-Detector/blob/main/static/img/tutorial.png)
-
